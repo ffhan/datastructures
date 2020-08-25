@@ -12,17 +12,17 @@ type node struct {
 	value interface{}
 }
 
-type linkedList struct {
+type singlyLinkedList struct {
 	head *node
 	tail *node
 	size int
 }
 
-func NewLinkedList() *linkedList {
-	return &linkedList{}
+func NewSinglyLinkedList() *singlyLinkedList {
+	return &singlyLinkedList{}
 }
 
-func (l *linkedList) Insert(index int, value interface{}) error {
+func (l *singlyLinkedList) Insert(index int, value interface{}) error {
 	if index < 0 || index > l.size {
 		return IndexOutOfRangeErr
 	}
@@ -50,7 +50,7 @@ func (l *linkedList) Insert(index int, value interface{}) error {
 	return CorruptListErr
 }
 
-func (l *linkedList) Prepend(value interface{}) {
+func (l *singlyLinkedList) Prepend(value interface{}) {
 	newNode := &node{next: l.head, value: value}
 	l.head = newNode
 	if l.tail == nil {
@@ -59,7 +59,7 @@ func (l *linkedList) Prepend(value interface{}) {
 	l.size += 1
 }
 
-func (l *linkedList) Append(value interface{}) {
+func (l *singlyLinkedList) Append(value interface{}) {
 	newNode := &node{value: value}
 	if l.size == 0 {
 		l.head = newNode
@@ -72,11 +72,11 @@ func (l *linkedList) Append(value interface{}) {
 	l.size += 1
 }
 
-func (l *linkedList) Size() int {
+func (l *singlyLinkedList) Size() int {
 	return l.size
 }
 
-func (l *linkedList) Remove(index int) (interface{}, error) {
+func (l *singlyLinkedList) Remove(index int) (interface{}, error) {
 	if l.size == 0 || index < 0 || index >= l.size {
 		return nil, IndexOutOfRangeErr
 	}
@@ -104,11 +104,11 @@ func (l *linkedList) Remove(index int) (interface{}, error) {
 	return nil, CorruptListErr
 }
 
-func (l *linkedList) IsCorrupted() bool {
+func (l *singlyLinkedList) IsCorrupted() bool {
 	return l.IsCircularAndCheckSizeMatches() || l.IsHeadCorrupted() || l.IsTailCorrupted()
 }
 
-func (l *linkedList) IsCircularAndCheckSizeMatches() bool {
+func (l *singlyLinkedList) IsCircularAndCheckSizeMatches() bool {
 	fast := l.head
 	slow := l.head
 
@@ -130,14 +130,14 @@ func (l *linkedList) IsCircularAndCheckSizeMatches() bool {
 	return size != l.size
 }
 
-func (l *linkedList) IsHeadCorrupted() bool {
+func (l *singlyLinkedList) IsHeadCorrupted() bool {
 	if l.size == 0 {
 		return l.head != nil
 	}
 	return l.head != nil && l.head.next != nil
 }
 
-func (l *linkedList) IsTailCorrupted() bool {
+func (l *singlyLinkedList) IsTailCorrupted() bool {
 	if l.size == 0 {
 		return l.tail != nil
 	}
@@ -147,7 +147,7 @@ func (l *linkedList) IsTailCorrupted() bool {
 	return !(l.tail != nil && l.head != l.tail && l.tail.next == nil)
 }
 
-func (l *linkedList) ToArray() []interface{} {
+func (l *singlyLinkedList) ToArray() []interface{} {
 	result := make([]interface{}, 0, l.size)
 	for node := l.head; node != nil; node = node.next {
 		result = append(result, node.value)
@@ -155,7 +155,7 @@ func (l *linkedList) ToArray() []interface{} {
 	return result
 }
 
-func (l *linkedList) Iterator() *iterator {
+func (l *singlyLinkedList) Iterator() *iterator {
 	return &iterator{current: l.head, index: 0}
 }
 

@@ -11,7 +11,7 @@ func TestLinkedList_IsCircular_CircularList(t *testing.T) {
 	n2 := &node{next: n3, value: 2}
 	n4.next = n2
 	n1 := &node{next: n2, value: 1}
-	l := &linkedList{head: n1, tail: n4, size: 4}
+	l := &singlyLinkedList{head: n1, tail: n4, size: 4}
 
 	if !l.IsCircularAndCheckSizeMatches() {
 		t.Errorf("didn't detect a circular list")
@@ -23,7 +23,7 @@ func TestLinkedList_IsCircular_InvalidSize(t *testing.T) {
 	n3 := &node{next: n4, value: 3}
 	n2 := &node{next: n3, value: 2}
 	n1 := &node{next: n2, value: 1}
-	l := &linkedList{head: n1, tail: n4, size: 5}
+	l := &singlyLinkedList{head: n1, tail: n4, size: 5}
 
 	if !l.IsCircularAndCheckSizeMatches() {
 		t.Errorf("didn't detect invalid size")
@@ -31,7 +31,7 @@ func TestLinkedList_IsCircular_InvalidSize(t *testing.T) {
 }
 
 func TestLinkedList_Append(t *testing.T) {
-	l := NewLinkedList()
+	l := NewSinglyLinkedList()
 	l.Append(1)
 	l.Append(2)
 	l.Append(3)
@@ -49,7 +49,7 @@ func TestLinkedList_Append(t *testing.T) {
 }
 
 func TestLinkedList_Prepend(t *testing.T) {
-	l := NewLinkedList()
+	l := NewSinglyLinkedList()
 	l.Prepend(1)
 	l.Prepend(2)
 	l.Prepend(3)
@@ -67,7 +67,7 @@ func TestLinkedList_Prepend(t *testing.T) {
 }
 
 func TestLinkedList_Insert(t *testing.T) {
-	l := NewLinkedList()
+	l := NewSinglyLinkedList()
 	l.Append(1)
 	l.Append(3)
 	l.Append(4)
@@ -90,7 +90,7 @@ func TestLinkedList_Insert(t *testing.T) {
 }
 
 func TestLinkedList_Insert_InvalidIndex(t *testing.T) {
-	l := NewLinkedList()
+	l := NewSinglyLinkedList()
 	err := l.Insert(-2, 1)
 	if !errors.Is(err, IndexOutOfRangeErr) {
 		t.Errorf("expected error %v to be of %v\n", err, IndexOutOfRangeErr)
@@ -102,7 +102,7 @@ func TestLinkedList_Insert_InvalidIndex(t *testing.T) {
 }
 
 func TestLinkedList_Remove(t *testing.T) {
-	l := NewLinkedList()
+	l := NewSinglyLinkedList()
 	_, err := l.Remove(-2)
 	if !errors.Is(err, IndexOutOfRangeErr) {
 		t.Errorf("expected error %v to be of %v\n", err, IndexOutOfRangeErr)
