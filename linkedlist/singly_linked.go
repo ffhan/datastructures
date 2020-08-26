@@ -180,6 +180,6 @@ func (i *iterator) Next() {
 	i.index += 1
 }
 
-func (i *iterator) HasNext() bool {
-	return i.current != nil && i.current.next != nil
+func (i *iterator) Has() bool {
+	return i.current != nil
 }

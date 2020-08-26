@@ -38,7 +38,7 @@ func TestLinkedList_Append(t *testing.T) {
 
 	expected := []int{1, 2, 3}
 
-	for iter := l.Iterator(); iter.HasNext(); iter.Next() {
+	for iter := l.Iterator(); iter.Has(); iter.Next() {
 		get := iter.Get().(int)
 		args := expected[iter.Index()]
 		if get != args {
@@ -56,7 +56,7 @@ func TestLinkedList_Prepend(t *testing.T) {
 
 	expected := []int{3, 2, 1}
 
-	for iter := l.Iterator(); iter.HasNext(); iter.Next() {
+	for iter := l.Iterator(); iter.Has(); iter.Next() {
 		get := iter.Get().(int)
 		args := expected[iter.Index()]
 		if get != args {
@@ -79,7 +79,7 @@ func TestLinkedList_Insert(t *testing.T) {
 
 	expected := []int{1, 2, 3, 4}
 
-	for iter := l.Iterator(); iter.HasNext(); iter.Next() {
+	for iter := l.Iterator(); iter.Has(); iter.Next() {
 		get := iter.Get().(int)
 		args := expected[iter.Index()]
 		if get != args {
@@ -132,7 +132,7 @@ func TestLinkedList_Remove(t *testing.T) {
 		t.Errorf("expected removed val %d, got %d\n", expectedVal, val)
 	}
 	expected := []int{1, 3}
-	for iter := l.Iterator(); iter.HasNext(); iter.Next() {
+	for iter := l.Iterator(); iter.Has(); iter.Next() {
 		get := iter.Get().(int)
 		args := expected[iter.Index()]
 		if get != args {
