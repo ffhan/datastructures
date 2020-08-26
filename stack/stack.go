@@ -1,29 +1,36 @@
 package stack
 
-import "algos/linkedlist"
+import "errors"
 
-type list interface {
-	Append(value interface{})
-	Remove(index int) (interface{}, error)
-	Size() int
-}
+var (
+	EmptyStackErr = errors.New("stack is empty")
+)
 
 type stack struct {
-	list list
+	values []interface{}
 }
 
 func NewStack() *stack {
-	return &stack{list: linkedlist.NewSinglyLinkedList()}
+	return &stack{values: make([]interface{}, 0)}
 }
 
-func (s *stack) Push(value interface{}) {
-	s.list.Append(value)
+func (q *stack) Push(value interface{}) {
+	q.values = append(q.values, value)
 }
 
-func (s *stack) Pop() (interface{}, error) {
-	return s.list.Remove(0)
+func (q *stack) Pop() (interface{}, error) {
+	if len(q.values) == 0 {
+		return nil, EmptyStackErr
+	}
+	val := q.values[len(q.values)-1]
+	q.values = q.values[:len(q.values)-1]
+	return val, nil
 }
 
-func (s *stack) Size() int {
-	return s.list.Size()
+func (q *stack) IsEmpty() bool {
+	return len(q.values) == 0
+}
+
+func (q *stack) Size() int {
+	return len(q.values)
 }
