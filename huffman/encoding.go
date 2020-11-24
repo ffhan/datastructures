@@ -4,35 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 )
-
-type Encoder interface {
-	Encode(reader io.Reader) io.Writer
-}
-
-type code struct {
-	value   int64
-	bitsize byte
-}
-
-func (c code) String() string {
-	return fmt.Sprintf("%0"+strconv.Itoa(int(c.bitsize))+"b", c.value)
-}
-
-type node struct {
-	left, right *node
-	key         byte
-	val         int
-}
 
 type encoder struct {
 	in      io.Reader
 	mapping map[byte]code
-}
-
-func (e *encoder) SetReader(reader io.Reader) {
-	e.in = reader
+	eot     code // end of transfer
 }
 
 func (e *encoder) Write(p []byte) (n int, err error) {
@@ -41,15 +18,15 @@ func (e *encoder) Write(p []byte) (n int, err error) {
 	}
 	buffer := make([]byte, 1)
 	currentBitSize := byte(0)
-	currentByte := uint16(0)
+	currentByte := uint64(0)
 
 	var read int
 	for n < len(p) {
 		if currentBitSize >= 8 {
+			p[n] = byte((currentByte >> (currentBitSize - 8)) & 0xFF)
 			currentBitSize -= 8
-			p[n] = byte(currentByte & 0xFF)
 			n += 1
-			currentByte >>= 8
+			currentByte &= (1 << currentBitSize) - 1
 			continue
 		}
 		if err != nil && currentBitSize > 0 {
@@ -63,6 +40,8 @@ func (e *encoder) Write(p []byte) (n int, err error) {
 		}
 		read, err = e.in.Read(buffer)
 		if err != nil {
+			currentByte = (currentByte << e.eot.bitsize) | uint64(e.eot.value)
+			currentBitSize += e.eot.bitsize
 			continue
 		}
 		if read <= 0 {
@@ -76,102 +55,7 @@ func (e *encoder) Write(p []byte) (n int, err error) {
 			continue
 		}
 		currentBitSize += code.bitsize
-		currentByte = (currentByte << code.bitsize) | uint16(code.value)
+		currentByte = (currentByte << code.bitsize) | uint64(code.value)
 	}
 	return n, nil
-}
-
-func SampleBytes(bytes []byte) (*encoder, error) {
-	freqs := getFreqs(bytes)
-	tree, err := buildTree(freqs)
-	if err != nil {
-		return nil, err
-	}
-	return buildEncoderFromTree(tree), nil
-}
-
-func Sample(reader io.Reader, n int) (*encoder, error) {
-	bytes := make([]byte, n)
-	readBytes, err := reader.Read(bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	if readBytes < n { // if less bytes are available than n, sample and encode only available bytes.
-		n = readBytes
-		bytes = bytes[:readBytes]
-	}
-	return SampleBytes(bytes)
-}
-
-func (e *encoder) buildBranch(tree *node, val code) {
-	if tree.left == nil && tree.right == nil {
-		e.mapping[tree.key] = val
-		return
-	}
-	if tree.left != nil {
-		leftCode := val
-		leftCode.value = (leftCode.value << 1) | 1
-		leftCode.bitsize += 1
-		e.buildBranch(tree.left, leftCode)
-	}
-	if tree.right != nil {
-		rightCode := val
-		rightCode.value = rightCode.value << 1
-		rightCode.bitsize += 1
-		e.buildBranch(tree.right, rightCode)
-	}
-}
-
-func buildEncoderFromTree(tree *node) *encoder {
-	e := &encoder{mapping: make(map[byte]code)}
-	e.buildBranch(tree, code{0, 0})
-	return e
-}
-
-func buildTree(freqs minHeap) (*node, error) {
-	for {
-		left, ok := freqs.Pop()
-		if !ok {
-			return nil, errors.New("no elements provided for sampling")
-		}
-		right, ok := freqs.Pop()
-		if !ok {
-			return &node{
-				key: right.key,
-				val: right.val,
-			}, nil
-		}
-		if right.val > left.val { // ensure right is bigger than left
-			temp := right
-			right = left
-			left = temp
-		}
-		newNode := node{
-			left:  left,
-			right: right,
-			val:   left.val + right.val,
-		}
-		if freqs.Size() == 0 {
-			return &newNode, nil
-		}
-		freqs.Push(newNode)
-	}
-}
-
-func getFreqs(bytes []byte) minHeap {
-	n := len(bytes)
-	freqs := make(map[byte]int)
-	for i := 0; i < n; i++ {
-		freqs[bytes[i]] += 1
-	}
-
-	data := make(minHeap, 0, len(freqs))
-	for key, val := range freqs {
-		data.Push(node{
-			key: key,
-			val: val,
-		})
-	}
-	return data
 }
