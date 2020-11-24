@@ -3,19 +3,27 @@ package huffman
 import "io"
 
 type decoder struct {
-	out  io.Writer
+	in   io.Reader
 	tree tree
 }
 
+func (d *decoder) read(buffer []byte) (byte, error) {
+	_, err := d.in.Read(buffer)
+	if err != nil {
+		return 0, err
+	}
+	return buffer[0], nil
+}
+
 func (d *decoder) Read(p []byte) (n int, err error) {
-	const bufferMaxSize = 16
+	inBuffer := make([]byte, 1)
 
 	bitOffset := 0
-	currentByte := p[n]
-	n += 1
+	currentByte, err := d.read(inBuffer)
+	if err != nil {
+		return n, err
+	}
 	node := &d.tree.root
-
-	buffer := make([]byte, 0, bufferMaxSize)
 
 	eot := false
 
@@ -27,8 +35,10 @@ readLoop:
 				if n >= len(p) {
 					break readLoop
 				}
-				currentByte = p[n]
-				n += 1
+				currentByte, err = d.read(inBuffer)
+				if err != nil {
+					return n, err
+				}
 				bitOffset = 0
 			}
 			bit := (currentByte >> 7) & 1
@@ -42,20 +52,12 @@ readLoop:
 			}
 		}
 
-		if len(buffer) == bufferMaxSize {
-			if _, err := d.out.Write(buffer); err != nil {
-				return n, err
-			}
-			buffer = buffer[:0] // clear the buffer slice
-		}
 		if !node.isEOT {
-			buffer = append(buffer, node.key)
+			p[n] = node.key
+			n += 1
 		} else {
 			eot = true
 		}
-	}
-	if _, err = d.out.Write(buffer); err != nil {
-		return n, err
 	}
 	return n, nil
 }

@@ -39,8 +39,8 @@ func (h huffman) Encoder(writer io.Writer) *encoder { // todo: implement with a 
 	return e
 }
 
-func (h huffman) Decoder(writer io.Writer) *decoder { // todo: implement with a Reader
-	return &decoder{out: writer, tree: h.tree}
+func (h huffman) Decoder(reader io.Reader) *decoder { // todo: implement with a Reader
+	return &decoder{in: reader, tree: h.tree}
 }
 
 func SampleBytes(bytes []byte) (*huffman, error) {

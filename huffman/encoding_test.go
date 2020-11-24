@@ -32,16 +32,16 @@ func TestSampleEncodeDecode(t *testing.T) {
 	}
 	t.Logf("wrote %d bytes: %v with compression rate of %.2f%%", n, encodedBuffer.Bytes(), 100.0*float64(len(input)-n)/float64(len(input)))
 
-	var buf bytes.Buffer
-	decodedBytes, err := huffman.Decoder(&buf).Read(encodedBuffer.Bytes())
+	decodeBuffer := make([]byte, 1024)
+	decodedBytes, err := huffman.Decoder(&encodedBuffer).Read(decodeBuffer)
 	if err != nil {
 		t.Error(err)
 	}
-	if decodedBytes != n {
+	if decodedBytes != len(input) {
 		t.Errorf("expected %d read bytes, got %d\n", n, decodedBytes)
 	}
-	t.Logf("decoded bytes: %v", buf.Bytes())
-	decodedResult := buf.String()
+	t.Logf("decoded bytes: %v", decodeBuffer[:decodedBytes])
+	decodedResult := string(decodeBuffer[:decodedBytes])
 	if decodedResult != origin {
 		t.Errorf("expected \"%s\", got \"%s\"", origin, decodedResult)
 	}
