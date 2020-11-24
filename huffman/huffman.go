@@ -33,13 +33,13 @@ type huffman struct {
 	tree tree
 }
 
-func (h huffman) Encoder(reader io.Reader) *encoder {
+func (h huffman) Encoder(writer io.Writer) *encoder { // todo: implement with a Writer
 	e := buildEncoderFromTree(&h.tree)
-	e.in = reader
+	e.out = writer
 	return e
 }
 
-func (h huffman) Decoder(writer io.Writer) *decoder {
+func (h huffman) Decoder(writer io.Writer) *decoder { // todo: implement with a Reader
 	return &decoder{out: writer, tree: h.tree}
 }
 
